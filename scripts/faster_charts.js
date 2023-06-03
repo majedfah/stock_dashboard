@@ -1,18 +1,59 @@
+
+let cache = {};
+let timeoutId = null;
+const DEBOUNCE_DELAY = 500; // 500ms delay
+
 document.getElementById('stock-symbol').addEventListener('change', function() {
     let symbol = this.value;
+
+    // Clear the previous timeout if it exists
+    if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+    }
+
+    // Set a new timeout
+    timeoutId = setTimeout(() => {
+        // Check if the data is in the cache
+        if (symbol in cache) {
+            handleData(cache[symbol], symbol);
+        } else {
+            // Fetch the data and store it in the cache
+            fetchData(symbol).then(data => {
+                cache[symbol] = data;
+                handleData(data, symbol);
+            });
+        }
+    }, DEBOUNCE_DELAY);
+});
+
+function fetchData(symbol) {
     let apiKey = '000K24DJRNTQ09ZT';
 
-    // Fetch stock prices
-    fetch(`https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${symbol}&outputsize=full&apikey=${apiKey}`)
-    .then(response => response.json())
-    .then(data => {
-        // Handle stock prices
-        const jsonData = Object.entries(data['Time Series (Daily)']).map(([key, value]) => {
+    // Define URLs
+    const stockPricesUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${symbol}&outputsize=full&apikey=${apiKey}`;
+    const incomeStatementUrl = `https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol=${symbol}&apikey=${apiKey}`;
+    const earningsUrl = `https://www.alphavantage.co/query?function=EARNINGS&symbol=${symbol}&apikey=${apiKey}`;
+
+    // Fetch data in parallel
+    return Promise.all([
+        fetch(stockPricesUrl).then(response => response.json()),
+        fetch(incomeStatementUrl).then(response => response.json()),
+        fetch(earningsUrl).then(response => response.json())
+    ]);
+}
+
+function handleData([stockPricesData, incomeStatementData1, earningsData], symbol) {
+    // Handle the data...
+    // This is where you would put the rest of your existing code that handles the fetched data.
+    // Make sure to replace all instances of 'this.value' with 'symbol' in your existing code.
+    // Handle stock prices
+    const jsonData = Object.entries(stockPricesData['Time Series (Daily)']).map(([key, value]) => {
         const date = new Date(key).getTime();
         const price = parseFloat(value['4. close']);
-            return [date, price];
-        }).reverse();
-        const chart = Highcharts.stockChart('container1', {
+                return [date, price];
+            }).reverse();
+        // Here you can put the chart code for the stock prices
+        Highcharts.stockChart('container1', {
             chart: {
                 style: {
                   fontFamily: 'Roboto'
@@ -39,6 +80,10 @@ document.getElementById('stock-symbol').addEventListener('change', function() {
                   valueDecimals: 2
                 }
               }],
+              tooltip:{
+                pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>${point.y}</b><br/>',
+                valueDecimals: 2
+              },
         
               navigator: {
                 series: {
@@ -97,18 +142,12 @@ document.getElementById('stock-symbol').addEventListener('change', function() {
                 }
               }
         });
-
-        // Fetch income statement
-        return fetch(`https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol=${symbol}&apikey=${apiKey}`);
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Handle margins
-        let quarters = data.quarterlyReports.slice(0, 20).reverse();
+        // Handle margins 
+        let quarters = incomeStatementData1.quarterlyReports.slice(0, 19).reverse();
         let grossMargins = quarters.map(report => [(new Date(report.fiscalDateEnding)).getTime(), (report.grossProfit / report.totalRevenue) * 100]);
         let operatingMargins = quarters.map(report => [(new Date(report.fiscalDateEnding)).getTime(), (report.operatingIncome / report.totalRevenue) * 100]);
         let profitMargins = quarters.map(report => [(new Date(report.fiscalDateEnding)).getTime(), (report.netIncome / report.totalRevenue) * 100]);
-
+        // Here you can put the chart code for the income statement
         Highcharts.stockChart('container3', {
             // ... rest of the chart configuration remains the same
             chart: {
@@ -194,12 +233,14 @@ document.getElementById('stock-symbol').addEventListener('change', function() {
             }
         });
 
-        // Handle bars
-        let quartersBars = data.quarterlyReports.slice(0, 4).reverse();
+        // Handle income statement
+        // Handel bars 
+        let quartersBars = incomeStatementData1.quarterlyReports.slice(0, 4).reverse();
         let categories = quartersBars.map(report => `${report.fiscalDateEnding.slice(0, 4)} Q${Math.floor((new Date(report.fiscalDateEnding).getMonth() + 3) / 3)}`);
         let revenues = quartersBars.map(report => report.totalRevenue / 1000000000);
         let grossProfits = quartersBars.map(report => report.grossProfit / 1000000000);
         let operatingIncomes = quartersBars.map(report => report.operatingIncome / 1000000000);
+        // Here you can put the chart code for the income statement
 
         Highcharts.chart('container2', {
             chart: {
@@ -269,19 +310,14 @@ document.getElementById('stock-symbol').addEventListener('change', function() {
                 }
             }
         });
-        // Fetch income statement for operating expenses
-        return fetch(`https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol=${symbol}&apikey=${apiKey}`);
-    })
-    .then(response => response.json())
-    .then(data => {
-        // Prepare data for Highcharts
-        const rawData = data.quarterlyReports.slice(0, 4).reverse();
-        const categories = rawData.map(report => report.fiscalDateEnding);
+
+        // Handle stacked bars
+        const rawData = incomeStatementData1.quarterlyReports.slice(0, 4).reverse();
+        const categories2 = rawData.map(report => report.fiscalDateEnding);
         const researchAndDevelopment = rawData.map(report => parseInt(report.researchAndDevelopment) / 1e9);
         const sgAndA = rawData.map(report => parseInt(report.sellingGeneralAndAdministrative) / 1e9);
         const operatingExpenses = rawData.map(report => parseInt(report.operatingExpenses) / 1e9);
-
-
+        // stacked bar chart code 
         Highcharts.setOptions({
             lang: {
                 thousandsSep: ','
@@ -315,7 +351,7 @@ document.getElementById('stock-symbol').addEventListener('change', function() {
                 text: `${symbol} Expenses`
             },
             xAxis: {
-                categories: categories,
+                categories: categories2,
                 crosshair: true,
                 labels: {
                     style: {
@@ -384,19 +420,15 @@ document.getElementById('stock-symbol').addEventListener('change', function() {
             }
         ]
         });
-    })
-    .catch(error => console.error('Error:', error));
 
-    // Fetch EPS data
-fetch(`https://www.alphavantage.co/query?function=EARNINGS&symbol=${symbol}&apikey=${apiKey}`)
-.then(response => response.json())
-.then(data => {
-    // Handle EPS data
-    const epsData = data.quarterlyEarnings.map(earning => {
-    const date = new Date(earning.fiscalDateEnding).getTime();
-    const eps = parseFloat(earning.reportedEPS);
-        return [date, eps];
-    }).reverse();
+
+        // Handle EPS data
+        const epsData = earningsData.quarterlyEarnings.map(earning => {
+        const date = new Date(earning.fiscalDateEnding).getTime();
+        const eps = parseFloat(earning.reportedEPS);
+                return [date, eps];
+            }).reverse();
+        // Here you can put the chart code for the EPS data
 
     Highcharts.stockChart('container5', {
         chart: {
@@ -408,6 +440,17 @@ fetch(`https://www.alphavantage.co/query?function=EARNINGS&symbol=${symbol}&apik
         title: {
             useHTML: true,
             text: `${symbol} Earnings Per Share (EPS)`
+        },
+        yAxis: {
+            labels:{
+                formatter: function(){
+                    return "$" + this.value;
+                }
+            }
+        },
+        tooltip:{
+            pointFormat: '<span style="color:{series.color}">{series.name}</span>: <b>${point.y}</b><br/>',
+            valueDecimals: 2
         },
         rangeSelector: {
             buttons: [{
@@ -488,112 +531,4 @@ fetch(`https://www.alphavantage.co/query?function=EARNINGS&symbol=${symbol}&apik
             }
         }
     });
-})
-.catch(error => console.error('Error:', error));
-// Fetch income statement
-fetch(`https://www.alphavantage.co/query?function=INCOME_STATEMENT&symbol=${symbol}&apikey=${apiKey}`)
-.then(response => response.json())
-.then(data => {
-    // Handle revenue data
-    let quarters = data.quarterlyReports.slice(0, 20).reverse();
-    let revenues = quarters.map(report => [(new Date(report.fiscalDateEnding)).getTime(), report.totalRevenue / 1e9]);
-
-    Highcharts.stockChart('container6', {
-        chart: {
-            style: {
-                fontFamily: 'Roboto'
-            }
-        },
-
-        title: {
-            useHTML: true,
-            text: `${symbol} Revenue Trends`
-        },
-
-        rangeSelector: {
-            buttons: [{
-                type: 'ytd',
-                text: 'YTD'
-            }, {
-                type: 'all',
-                text: 'All'
-            }],
-            selected: 1 // This selects the 'YTD' button by default
-        },
-
-        series: [{
-            name: `${symbol} Revenue`,
-            data: revenues,
-            type: 'line',
-            lineWidth:3,
-            color: 'rgba(19,97,3,255)',
-            tooltip: {
-                valueDecimals: 2
-            }
-        }],
-
-        navigator: {
-            series: {
-                color: 'rgba(170,170,170,255)',
-                fillColor: 'rgba(170,170,170,255)'
-            },
-            maskFill: 'rgba(237,236,236,255)',
-            xAxis: {
-                labels: {
-                    y: 23,
-                    style: {
-                        fontWeight: 'bold'
-                    }
-                },
-                title: {
-                    text: 'Date Range',
-                    style: {
-                        fontWeight: 'bold'
-                    }
-                }
-            }
-        },
-
-        responsive: {
-            rules: [{
-                condition: {
-                    maxWidth: 500
-                },
-                chartOptions: {
-                    chart: {
-                        height: 300
-                    },
-                    subtitle: {
-                        text: null
-                    },
-                    navigator: {
-                        enabled: false
-                    }
-                }
-            }]
-        },
-        tooltip: {
-            valueDecimals: 3,
-            valuePrefix: '$',
-            valueSuffix: 'B'
-        },
-
-        credits: {
-            enabled: true,
-            text: 'Made by Majed',
-            href: '',
-            position: {
-                align: 'right',
-                verticalAlign: 'bottom',
-                x: -30,
-                y:-560
-            },
-            style: {
-                fontSize: '14px',
-                color: '#333'
-            }
-        }
-    });
-})
-.catch(error => console.error('Error:', error));
-});
+}
