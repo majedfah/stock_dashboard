@@ -1,0 +1,84 @@
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.1.0/papaparse.min.js"></script>
+    <script src="https://d3js.org/d3.v5.min.js"></script>
+    <script src="https://code.highcharts.com/stock/highstock.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/data.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/exporting.js"></script>
+    <script src="https://code.highcharts.com/stock/modules/accessibility.js"></script>
+    <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+    <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+
+    <title>Stock Indicator</title>
+</head>
+
+<body class="bg-gray-100">
+    <div class="container mx-auto py-3">
+        <div class="flex justify-center">
+            <div class="w-1/2">
+                <select class="form-select block w-full mt-1" id="stock-symbol">
+                    <!-- Your options here -->
+                    <option value="">Select Stock</option>
+                    <option value="TSLA">Tesla</option>
+                    <option value="AAPL">Apple</option>
+                      <option value="GOOGL">Google</option>
+                      <option value="AMZN">Amazon</option>
+                      <option value="MSFT">Microsoft</option>
+                      <option value="LCID">Lucid</option>
+                      <option value="FB">Facebook</option>
+                      <option value="NFLX">Netflix</option>
+                      <option value="NVDA">NVIDIA</option>
+                      <option value="PYPL">PayPal</option>
+                      <option value="DIS">Disney</option>
+                      <option value="SBUX">Starbucks</option>
+                      <option value="NKE">Nike</option>
+                      <option value="AMD">AMD</option>
+                      <option value="INTC">Intel</option>
+                      <option value="CRM">Salesforce</option>
+                      <option value="UBER">Uber</option>
+                      <option value="LYFT">Lyft</option>
+                      <option value="TWTR">Twitter</option>
+                      <option value="SQ">Square</option>
+                      <option value="ATVI">Activision Blizzard</option>
+                      <option value="GE">General Electric</option>
+                      <option value="C">Citigroup</option>
+                      <option value="BAC">Bank of America</option>
+                      <option value="JPM">JPMorgan Chase</option>
+                      <option value="GS">Goldman Sachs</option>
+                      <option value="MCD">McDonald's</option>
+                      <option value="KO">Coca-Cola</option>
+                      <option value="PEP">PepsiCo</option>
+                      <option value="WMT">Walmart</option>
+                      <option value="AMGN">Amgen</option>
+                      <option value="PFE">Pfizer</option>
+                      <option value="MRK">Merck & Co.</option>
+                      <option value="JNJ">Johnson & Johnson</option>
+                      <option value="PG">Procter & Gamble</option>
+                      <option value="VZ">Verizon Communications</option>
+                      <option value="T">AT&T</option>
+                      <option value="CMCSA">Comcast</option>
+                      <option value="GOOG">Alphabet Inc. (Google)</option>
+                      <option value="IBM">IBM</option>
+                    <!-- ... -->
+                </select>
+            </div>
+        </div>
+    </div>
+    
+    <div class="grid grid-cols-2 gap-4 p-4">
+        <div id="container1" class="bg-white p-4 rounded shadow"></div>
+        <div id="container3" class="bg-white p-4 rounded shadow"></div>
+        <div id="container2" class="bg-white p-4 rounded shadow"></div>
+        <div id="container4" class="bg-white p-4 rounded shadow"></div>
+        <div id="container5" class="bg-white p-4 rounded shadow"></div>
+        <div id="container6" class="bg-white p-4 rounded shadow"></div>
+    </div>
+
+    <!-- Include your combined JavaScript file -->
+    <script src="/scripts/all_charts.js"></script>
+</body>
+</html>
