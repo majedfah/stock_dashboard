@@ -44,6 +44,19 @@ function fetchData(symbol) {
 }
 
 function handleData([stockPricesData, incomeStatementData1, earningsData], symbol) {
+     // Check if data objects are not undefined
+    if (!stockPricesData || !incomeStatementData1 || !earningsData) {
+        console.error('One of the data objects is undefined:', { stockPricesData, incomeStatementData1, earningsData });
+        return; // Exit the function if any data object is undefined
+    }
+
+    // Check if 'Time Series (Daily)' property exists in stockPricesData
+    if (!stockPricesData['Time Series (Daily)']) {
+        console.error('Time Series (Daily) property is missing in stockPricesData:', stockPricesData);
+        return; // Exit the function if 'Time Series (Daily)' property is missing
+    }
+    console.log(stockPricesData, incomeStatementData1, earningsData);
+
     // Handle the data...
     // This is where you would put the rest of your existing code that handles the fetched data.
     // Make sure to replace all instances of 'this.value' with 'symbol' in your existing code.
