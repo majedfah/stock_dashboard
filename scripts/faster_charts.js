@@ -27,7 +27,8 @@ document.getElementById('stock-symbol').addEventListener('change', function() {
 });
 
 function fetchData(symbol) {
-    let apiKey = '000K24DJRNTQ09ZT';
+    // let apiKey = '000K24DJRNTQ09ZT';
+    let apiKey = 'V22X2VE3TYMV657P';
 
     // Define URLs
     const stockPricesUrl = `https://www.alphavantage.co/query?function=TIME_SERIES_DAILY_ADJUSTED&symbol=${symbol}&outputsize=full&apikey=${apiKey}`;
