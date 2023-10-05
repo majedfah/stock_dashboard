@@ -49,6 +49,10 @@ function handleData([stockPricesData, incomeStatementData1, earningsData], symbo
         console.error('One of the data objects is undefined:', { stockPricesData, incomeStatementData1, earningsData });
         return; // Exit the function if any data object is undefined
     }
+    console.log('stockPricesData:', stockPricesData);
+    console.log('incomeStatementData1:', incomeStatementData1);
+    console.log('earningsData:', earningsData);
+
 
     // Check if 'Time Series (Daily)' property exists in stockPricesData
     if (!stockPricesData['Time Series (Daily)']) {
